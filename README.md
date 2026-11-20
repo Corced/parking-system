@@ -1,1 +1,1 @@
-# parking-system
+# Parking system via Command Line Interface (CLI)
