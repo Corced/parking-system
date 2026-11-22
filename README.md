@@ -26,7 +26,7 @@ Aplikasi konsol berbasis TypeScript yang dirancang untuk membantu pengelolaan da
 
 | Nama dan NIM | Akun GitHub | Tanggung Jawab |
 |---|---|---|
-| Athaar (NIM: isi NIM) | @Corced | Setup Repository, Struktur Data, Main Menu, Create dan Validasi |
+| Athaar Putra Ruhenda (NIM: 263140707111014) | @Corced | Setup Repository, Struktur Data, Main Menu, Create dan Validasi |
 | Sterling Syahada (NIM: 263140701111017) | @ster-hooh | Read, Update, Flowchart (Bab II), dan README |
 | Jihad Musaddad (NIM: 263140707004) | @JIHAD-MUSADDAD | Delete, Search, Operator Biaya, dan Laporan |
 
