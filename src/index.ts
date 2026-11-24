@@ -1,4 +1,5 @@
-import * as readline from "readline";
+/// <reference types="node" />
+// import * as readline from "readline";
 
 // ============================================================================
 // 1. DATA TYPES & VARIABLES (Bab III - Tabel 3.1 Baris 3)
