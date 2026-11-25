@@ -1,2 +1,5 @@
 node_modules/
 dist/
+
+docs.py
+UAS Flowchart.drawio
