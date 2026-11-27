@@ -41,7 +41,28 @@ function promptInput(question: string): Promise<string> {
 }
 
 // ============================================================================
-// 2. MENU DISPLAY & PLACEHOLDER FUNCTIONS (Full logic to be added in Progress 3)
+// 2. HELPER FUNCTIONS (Validation, Cost Calculation & Formatting)
+// ============================================================================
+
+function parseVehicleType(input: string): VehicleType | null {
+  const normalized: string = input.toLowerCase();
+  if (normalized === "motorcycle") return "Motorcycle";
+  if (normalized === "car") return "Car";
+  if (normalized === "truck") return "Truck";
+  return null;
+}
+
+// Cost & formatting helpers (replace/sync with Jihad's feat/cost-operators PR if customized)
+function calculateParkingFee(vehicleType: VehicleType, hours: number): number {
+  return HOURLY_RATES[vehicleType] * hours;
+}
+
+function formatRupiah(amount: number): string {
+  return `Rp ${amount.toLocaleString("id-ID")}`;
+}
+
+// ============================================================================
+// 3. MENU DISPLAY & CRUD FEATURE FUNCTIONS
 // ============================================================================
 
 function displayMainMenu(): void {
@@ -62,28 +83,112 @@ function displayMainMenu(): void {
   console.log("==========================================");
 }
 
-function handleCheckInPlaceholder(): void {
-  console.log("\n[INFO] Option 1 selected: Vehicle Check-In (Module ready for Progress 3).");
+// Option [1] — Create Feature (Progress 3)
+async function handleVehicleCheckIn(): Promise<void> {
+  console.log("\n--- [1] VEHICLE CHECK-IN ---");
+
+  // 1. Capacity Check
+  const occupiedSlots: number = parkingRecords.filter((r) => r.isParked).length;
+  if (occupiedSlots >= PARKING_CAPACITY) {
+    console.log(`[ERROR] Parking lot is full (${occupiedSlots}/${PARKING_CAPACITY}). Cannot check in new vehicles.`);
+    return;
+  }
+
+  // 2. Validate License Plate (3-level nested if: non-empty -> not duplicate -> min length)
+  let plateNumber: string = "";
+  while (true) {
+    const rawPlate: string = await promptInput("Enter License Plate (e.g., N 1234 AB): ");
+    if (rawPlate !== "") {
+      const formattedPlate: string = rawPlate.toUpperCase();
+      const alreadyParked: boolean = parkingRecords.some(
+        (r) => r.isParked && r.plateNumber === formattedPlate
+      );
+
+      if (!alreadyParked) {
+        if (formattedPlate.length >= 3) {
+          plateNumber = formattedPlate;
+          break;
+        } else {
+          console.log("[ERROR] License plate must be at least 3 characters.");
+        }
+      } else {
+        console.log(`[ERROR] Vehicle "${formattedPlate}" is currently parked. Duplicate active check-in is not allowed.`);
+      }
+    } else {
+      console.log("[ERROR] License plate cannot be empty.");
+    }
+  }
+
+  // 3. Validate Vehicle Type
+  let vehicleType: VehicleType;
+  while (true) {
+    const rawType: string = await promptInput("Enter Vehicle Type (Motorcycle / Car / Truck): ");
+    const parsedType: VehicleType | null = parseVehicleType(rawType);
+
+    if (parsedType !== null) {
+      vehicleType = parsedType;
+      break;
+    }
+    console.log(`[ERROR] Invalid vehicle type "${rawType}". Choose Motorcycle, Car, or Truck.`);
+  }
+
+  // 4. Validate Parking Duration (Hours)
+  let hours: number = 0;
+  while (true) {
+    const rawHours: string = await promptInput("Enter Estimated Parking Duration (hours): ");
+    const parsedHours: number = Number(rawHours);
+
+    if (rawHours === "" || Number.isNaN(parsedHours) || parsedHours <= 0) {
+      console.log(`[ERROR] Invalid duration "${rawHours}". Please enter a positive number greater than 0.`);
+      continue;
+    }
+
+    hours = parsedHours;
+    break;
+  }
+
+  // 5. Calculate Fee & Add Record
+  const totalFee: number = calculateParkingFee(vehicleType, hours);
+  const newRecord: ParkingRecord = {
+    id: nextRecordId++,
+    plateNumber,
+    vehicleType,
+    hours,
+    totalFee,
+    isParked: true,
+  };
+
+  parkingRecords.push(newRecord);
+
+  // 6. Print Check-In Receipt
+  console.log("\n[SUCCESS] Vehicle checked in successfully!");
+  console.log("------------------------------------------");
+  console.log(`Record ID    : ${newRecord.id}`);
+  console.log(`License Plate: ${newRecord.plateNumber}`);
+  console.log(`Vehicle Type : ${newRecord.vehicleType}`);
+  console.log(`Duration     : ${newRecord.hours} hour(s)`);
+  console.log(`Estimated Fee: ${formatRupiah(newRecord.totalFee)}`);
+  console.log("------------------------------------------");
 }
 
 function handleCheckOutPlaceholder(): void {
-  console.log("\n[INFO] Option 2 selected: Vehicle Check-Out (Module ready for Progress 3).");
+  console.log("\n[INFO] Option 2 selected: Vehicle Check-Out (Module ready for Progress 4-5).");
 }
 
 function handleViewActivePlaceholder(): void {
-  console.log("\n[INFO] Option 3 selected: View Parked Vehicles List (Module ready for Progress 3).");
+  console.log("\n[INFO] Option 3 selected: View Parked Vehicles List (Module ready for Progress 4).");
 }
 
 function handleSearchPlatePlaceholder(): void {
-  console.log("\n[INFO] Option 4 selected: Search Vehicle by License Plate (Module ready for Progress 3).");
+  console.log("\n[INFO] Option 4 selected: Search Vehicle by License Plate (Module ready for Progress 6).");
 }
 
 function handleRevenueReportPlaceholder(): void {
-  console.log("\n[INFO] Option 5 selected: Parking Summary & Revenue Report (Module ready for Progress 3).");
+  console.log("\n[INFO] Option 5 selected: Parking Summary & Revenue Report (Module ready for Progress 4).");
 }
 
 // ============================================================================
-// 3. MAIN MENU LOOP & BRANCHING (Chapter III - Table 3.1 Rows 1 & 2)
+// 4. MAIN MENU LOOP & BRANCHING (Chapter III - Table 3.1 Rows 1 & 2)
 // ============================================================================
 
 async function runMainMenu(): Promise<void> {
@@ -100,7 +205,7 @@ async function runMainMenu(): Promise<void> {
 
     switch (menuChoice) {
       case 1:
-        handleCheckInPlaceholder();
+        await handleVehicleCheckIn();
         break;
       case 2:
         handleCheckOutPlaceholder();
